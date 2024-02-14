@@ -1,46 +1,34 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
-from bs4 import BeautifulSoup
 import pandas as pd
 
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_experimental_option(name="detach", value=True)
-driver = webdriver.Chrome(options=chrome_options)
 
-driver.get("https://fantasy.premierleague.com/statistics")
+class DataFramePreprocessor:
 
-cookie_button = driver.find_element(
-    By.XPATH, value='//*[@id="onetrust-accept-btn-handler"]')
-cookie_button.click()
+    def __init__(self):
+        with open("fpl-data-stats.csv") as self.data:
+            self.data = pd.read_csv(self.data)
+            self.df = pd.DataFrame(self.data)
 
-view = Select(driver.find_element(By.ID, value='filter'))
-view.select_by_index(3)
-sorted_by = Select(driver.find_element(By.ID, value='sort'))
-sorted_by.select_by_index(0)
+    def web_name_list_maker(self, n) -> int:
+        """
+        1 for Goalkeepers, 2 for Deffenders, 3 for Midfielders, 4 for Forwards
+        """
+        self.df = self.df[self.df['element_type'] == n]
+        self.web_name = self.df.drop_duplicates(subset=['web_name'])
+        self.web_name = self.web_name['web_name']
+        self.web_name = self.web_name.to_list()
+        return self.web_name
 
-page_source = driver.page_source
 
-soup = BeautifulSoup(page_source, 'html.parser')
-
-players = soup.find_all(class_="ElementInTable__Name-y9xi40-1 heNyFi")
-teams = soup.find_all(class_="ElementInTable__Team-y9xi40-3 hosEuf")
-costs = soup.select(
-    '.ElementTable__ElementRow-sc-1v08od9-3.kGMjuJ td:nth-of-type(3)')
-total_points = soup.select(
-    '.ElementTable__ElementRow-sc-1v08od9-3.kGMjuJ td:nth-of-type(6)')
-
-data = []
-
-for player, team, cost, total_point in zip(players, teams, costs, total_points):
-    row = {
-        'player': player.text,
-        'team': team.text,
-        'cost': cost.text,
-        'total point': total_point.text,
-        'point per cost': float(total_point.text)/float(cost.text)
-    }
-    data.append(row)
-
-df = pd.DataFrame(data)
-driver.quit()
+def var_optimizer(self, element_type=None, value="total_points"):
+    """
+    DataFrame includes Goalkeepers' stat
+    """
+    if isinstance(element_type, int):
+        df = self.df[self.df['element_type'] == element_type]
+    else:
+        df = self.df
+    row = df.drop(columns=['id', 'element_type', 'team_name',
+                           'opponent_team_name', 'was_home', 'now_cost', 'selected_by_percent', 'gameweek'])
+    row = row.groupby('web_name').sum()
+    row = row.sort_values([value], ascending=False)
+    return row
