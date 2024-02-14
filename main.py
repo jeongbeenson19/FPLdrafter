@@ -29,15 +29,15 @@ class DataFramePreprocessor:
         web_name = web_name.to_list()
         return web_name
 
-    def optimize_player_statistics(self, element_type=None, value="total_points"):
+    def summarize_player_statistics(self, element_type=None, value="total_points"):
         """
-        Optimize player statistics based on specific element type and value.
+        Summarize player statistics based on specific element type and value.
 
         Args:
             element_type (int, optional): Type of players to filter.
                 1 for Goalkeepers, 2 for Defenders, 3 for Midfielders, 4 for Forwards.
                 If not specified, includes all players. Defaults to None.
-            value (str, optional): Name of the statistic to optimize.
+            value (str, optional): Name of the variable to be sorted by.
                 Can be one of the following: 'minutes', 'shots', 'SoT', 'SiB', 'xG', 'npxG', 'G', 'npG',
                 'key_passes', 'xA', 'A', 'xGC', 'GC', 'xCS', 'CS', 'xGI', 'npxGI', 'xP',
                 'total_points', 'PvsxP', 'pos_touches', 'Att Pen', 'carries_final_third', 'carries_penalty_area'.
@@ -50,7 +50,7 @@ class DataFramePreprocessor:
             If element_type is specified, filters the DataFrame to include only players of the specified type.
             Then, removes unnecessary columns, aggregates the data by player name, and sorts the DataFrame
             based on the specified value column in descending order.
-            If element_type is not specified, uses the entire DataFrame for optimization.
+            If element_type is not specified, uses the entire DataFrame for summarization.
         """
         if isinstance(element_type, int):
             df = self.df[self.df['element_type'] == element_type]
