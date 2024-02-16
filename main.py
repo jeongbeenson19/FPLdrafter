@@ -56,8 +56,10 @@ class DataFramePreprocessor:
             df = self.df[self.df['element_type'] == element_type]
         else:
             df = self.df
-        row = df.drop(columns=['id', 'element_type', 'team_name',
-                               'opponent_team_name', 'was_home', 'now_cost', 'selected_by_percent', 'gameweek'])
-        row = row.groupby('web_name').sum()
-        row = row.sort_values([value], ascending=False)
-        return row
+        df = df.drop(columns=['id', 'element_type', 'team_name',
+                              'opponent_team_name', 'was_home', 'now_cost', 'selected_by_percent', 'gameweek'])
+        df = df.groupby('web_name').sum()
+        df = df.sort_values([value], ascending=False)
+        df['efficiency'] = df['total_points'] / df['minutes']
+        df.fillna(0, inplace=True)
+        return df
